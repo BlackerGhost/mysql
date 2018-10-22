@@ -1,0 +1,192 @@
+一，MySQL的存储引擎
+-  Mysql服务软件自带的功能程序，处理表的处理器
+功能组建：连接池，SQL接口，分析器，优化器，查询缓存，存储引擎，文件系统，管理工具，
+默认的存储引擎
+-  MySQL 5.0 / 5.1 ---> MyISAM
+-  MySQL 5.5 / 5.6 ---> InnoDB
+（1），列出可用的存储引擎类型
+- 显示引擎;或显示引擎\ G.
+（2），设置默认存储引擎
+修改/etc/my.cnf中配置文件
+的[mysqld]
+默认存储 - 发动机=的myisam
+（3），的myisam村存储引擎
+主要特点：支持表级锁，不支持事务，事务回滚，外键
+相关的表文件：.frm .MYI .MYD
+（4），innodb的存储引擎
+主要特点：支持行级锁定，支持事务回滚，外键
+相关的表文件：.FRM，的.ibd，ibdata1中，ib_logfile0，ib_logfile1
+（5），MySQL的锁机制
+锁粒度
+- 表级锁：一次直接对整张表进行加锁
+- 行级锁：只锁定某一行
+- 页级锁：对整个页面（mysql管理数据的基本存储单位）进行加锁
+锁类型
+- 读锁（共享锁）：支持并发读
+- 写锁（互斥锁，排他锁）：是独占锁，上锁期间其他线程不能读表或写表。
+查看当前的锁状态， - 检查table_lock开头的变量，％作通配符。
+mysql> show status like'Table_lock％';
+（6），事务特性
+原子：原子性
+- 事务的整个操作是一个整体，不可分割，要么全部成功，要么全部失败。
+一致性：一致性
+- 事务操作的前后，表中的记录没有变化
+隔离：隔离性
+- 事务操作是相互隔离不受影响的。
+耐用性：持久性
+- 数据一旦提交，不可改变，永久改变数据
+关闭自动提交，默认是自动提交
+mysql>显示类似“％autocommit％”的变量; //查看提交状态
+mysql> set autocommit = off; //关闭自动提交
+mysql> create table t2（id int）engine = innodb;
+mysql> select * from t2;
+mysql>插入到t2值（666）;
+mysql> select * from t2;
+mysql> rollback;
+mysql> commit;
+查询操作多的表适合使用的myisam存储引擎，可以节省系统资源;
+写操作多的表适合使用的InnoDB存储引擎，可以加大并发访问量
+-------------------------------------------------- ------------------------------
+二，数据导入导出
+（1），数据导入
+mysql>显示类似“secure_file_priv”的变量;
+[root @ client~] #cp / etc / passwd / var / lib / mysql-files /
+在MySQL的下执行系统命令
+Mysql> system ls / etc / passwd
+基本用法
+- 加载数据infile“目录名/文件名”
+进入表中名称字段以“分隔符”行终止，以“\ n”结尾;
+-------------------------------------------------- ------------------------------
+mysql> create table t3（ 
+    - >名字char（50），
+    - >密码char（1），
+    - > uid int（1），
+    - > pid int（1），
+    - > comment varchar（150），
+    - > homedir varchar（100），
+    - > shell char（30）
+- >）;
+-------------------------------------------------- ------------------------------
+mysql>加载数据infile“/ var / lib / mysql-files / passwd”
+    - >进入表t3
+    - >以“：”结尾的字段
+    - >以“\ n”结尾的行;
+    
+mysql> alter table t3 add id int（2）主键auto_increment first;
+-------------------------------------------------- ------------------------------
+修改目录及查看修改结果
+[root @ client~] #setenforce 0
+[root @ client~] #mkdir / mydir
+[root @ client~] #chown mysql / mydir /
+[root @ client~] #vim /etc/my.cnf
+[MySQL的]
+secure_file_priv = / MYDIR
+mysql>显示类似“secure_file_priv”的变量;
+-------------------------------------------------- ------------------------------
+（2），数据导出
+基本用法
+-  SQL查询到outfile“目录名/文件名”
+字段由“分隔符”终止
+以“\ n”结尾的行;
+mysql> select * from t22 into outfile“/ mydir / testip” 
+    - >以“”结尾的字段
+    - >以“\ n”结尾的行;
+[root @ client~] #cat / mydir / testip
+-------------------------------------------------- ------------------------------
+三，管理表记录
+（1），添加表记录
+格式一：添加一条记录，给所有字段赋值
+- 插入表名值（字段列表）;
+格式二：添加Ñ条记录，给所有字段赋值
+- 插入表名 
+ 值
+（字段列表），（字段列表），（字段列表）;
+mysql>插入t3值
+    - >（44，“nginx”，“x”，2000,2000，“nginxserver”，“/ home”，“/ sbin / nologin”）;
+格式三：添加1条记录，给指定字段赋值
+- 插入表名（字段名列表）values（字段值列表）;
+格式四：添加Ñ条记录，给指定字段赋值
+- 插入表名（字段名列表）  
+值（字段值列表），（字段值列表），（字段值列表）;
+mysql>插入到t3（名称，密码，shell） 
+值
+（ “丽丝”， “X”， “/斌/庆典”），
+（ “张三”， “X”， “/斌/假”）;
+-------------------------------------------------- ----------------------
+（2）查询表记录
+语法格式
+格式1：从表名中选择字段1，...，字段N;
+格式2：从表名中选择字段1，...，字段N，条件表达式;
+注意事项：使用*可一匹配所有字段，指定表名时，可以采用库名表名的形式
+mysql>从t3中选择id，name，shell，其中shell =“/ bin / bash”;
+将显示的字段名起别名
+从表名中选择字段1字段1别名;
+mysql> select id user_id，name name from t3;
+-------------------------------------------------- -----------------------
+（3）更新表记录
+格式1中，更新表内的所有记录
+update表名set字段1 =字段1值，字段2 =字段2值; 
+格式2中，只更新符合条件的部分记录
+update表名set字段1 =字段1值，字段2 =字段2值where条件表达式;
+mysql> update t3 set password =“a”，comment =“student”;
+-------------------------------------------------- -----------------------
+（4）删除表记录
+格式1：仅删除符合条件的记录
+从表名中删除条件表达式;
+mysql>从t3删除id = 45;
+格式2中，删除所有的表
+从表名中删除;
+四，匹配条件
+（1），基本匹配条件
+数值比较：字段类型必须数据数值类型
+=>> = << =！=
+字符比较/匹配空/非空：字段类型必须是字符类型//先做与再做或
+=！= IS NULL不是NULL
+mysql> select * from t3，其中homedir为null;
+逻辑匹配：多个判断条件时使用
+或者！/ not非（）提高优先级
+mysql> select * from t3，其中uid = 0且name =“root”;
+mysql> select * from t3，其中id = 3或id = 4;
+mysql> select name，id from t3 where（name =“root”或name =“bin”）和uid = 3;
+mysql> select name，id from t3 where name =“root”或name =“bin”and uid = 3;
+范围内匹配/去重显示
+在（值列表），不在（值列表），数字1和数字2之间，不同的字段名
+mysql>从t3中选择名称，其中名称为（“apache”，“daemon”，“mysql”，“adm”）;
+mysql>从t3中选择名称，其中id在3到6之间;
+mysql>从t3中选择distinct shell;
+（2）高级匹配条件
+模糊查询
+基本用法：其中字段名如'通配符'，_匹配单个字符，％匹配0~N个字符
+mysql> select * from t3其中名称如“r％”;
+mysql> select * from t3 where name“r__t”;
+mysql> select * from t3，其名称如'__％__';
+正则表达式
+基本用法：字段名regexp'正则表达式'
+ - 正则元字符^ $。[] * |
+mysql>从t3中选择名称regexp'[0-9]';
+mysql> select * from t3，其中name regexp'^ r | 3 $';
+mysql> select * from t3 where name regexp'。*';
+四则运算：字段必须是数值类型+  -  * /％
+mysql> alter table t3 add ageintint（2）unsigned default 19 after name;
+mysql>选择名称，年龄，2018年龄从t3出生，其中name =“root”;
+（3）操作查询结果
+聚集函数，MySQL的内置数据统计函数
+- 平均值，总和，最小值，最大值，计数
+mysql>从t3中选择max（uid），min（uid），sum（uid），avg（uid），count（name）;
+查询结果排序
+基本用法：SQL查询按字段名（通常是数值类型字段）[asc | desc];
+mysql> select id，name from t3 where name regexp'^ r'order by id desc;
+查询结果分组
+基本用法：-SQL查询group by字段名（通常是字符类型字段）;
+
+查询结果过滤
+基本用法
+-  SQL查询有条件表达式
+-  SQL查询条件有条件表达式;
+- 具有条件表达式的字段名的SQL查询组;
+
+限制查询结果显示行数
+SQL查询限制N; //显示查询结果前N条记录
+SQL查询限制N，M //显示指定范围内的查询记录
+SQL查询其中条件查询限制3; //显示查询结果前3条记录
+SQL查询其中条件查询限制3,3;
